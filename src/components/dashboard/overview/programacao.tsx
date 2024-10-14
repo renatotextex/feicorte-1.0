@@ -24,16 +24,29 @@ export function Programacao({ diff, trend, sx, value }: ProgramacaoProps): React
     <Card sx={sx}>
       <CardContent>
         <Stack spacing={2}>
-          <Stack direction="row" sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }} spacing={3}>
+          <Stack direction="row" sx={{alignItems: 'flex-start', justifyContent: 'space-between'}} spacing={3}>
             <Stack spacing={1}>
               <Typography color="text.secondary" variant="overline">
                 Programação
               </Typography>
-              <Typography variant="h4">{value}</Typography>
+              <Stack direction="row" spacing={1} sx={{ width: 'full', alignItems: 'center' }}>
+                <Typography variant="h4">{value}</Typography>
+                {/*<Typography>*/}
+                {/*  CADASTRADOS*/}
+                {/*</Typography>*/}
+              </Stack>
             </Stack>
-            <Avatar sx={{ backgroundColor: 'var(--mui-palette-warning-main)', height: '56px', width: '56px' }}>
-              <CalendarIcon fontSize="var(--icon-fontSize-lg)" />
-            </Avatar>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#630100',
+              borderRadius: '32px',
+              height: '56px',
+              width: '56px'
+            }}>
+              <CalendarIcon style={{color: '#fff'}} fontSize="var(--icon-fontSize-lg)" weight="bold"/>
+            </div>
           </Stack>
         </Stack>
       </CardContent>

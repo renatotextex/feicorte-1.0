@@ -21,15 +21,16 @@ const iconMapping = { Desktop: DesktopIcon, Tablet: DeviceTabletIcon, Phone: Pho
 export interface TrafficProps {
   chartSeries: number[];
   labels: string[];
+  title: string;
   sx?: SxProps;
 }
 
-export function Traffic({ chartSeries, labels, sx }: TrafficProps): React.JSX.Element {
+export function Traffic({ chartSeries, labels, title, sx }: TrafficProps): React.JSX.Element {
   const chartOptions = useChartOptions(labels);
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Traffic source" />
+      <CardHeader title={title} />
       <CardContent>
         <Stack spacing={2}>
           <Chart height={300} options={chartOptions} series={chartSeries} type="donut" width="100%" />

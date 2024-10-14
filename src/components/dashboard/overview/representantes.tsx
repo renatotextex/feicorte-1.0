@@ -1,13 +1,12 @@
+'use client'
+
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
 import type { SxProps } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ArrowDown as ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/ArrowDown';
-import { ArrowUp as ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
+import { Users } from "@phosphor-icons/react";
 
 export interface RepresentantesProps {
   diff?: number;
@@ -16,9 +15,7 @@ export interface RepresentantesProps {
   value: string;
 }
 
-export function Representantes({ diff, trend, sx, value }: RepresentantesProps): React.JSX.Element {
-  const TrendIcon = trend === 'up' ? ArrowUpIcon : ArrowDownIcon;
-  const trendColor = trend === 'up' ? 'var(--mui-palette-success-main)' : 'var(--mui-palette-error-main)';
+export function Representantes({ sx, value }: RepresentantesProps): React.JSX.Element {
 
   return (
     <Card sx={sx}>
@@ -31,9 +28,9 @@ export function Representantes({ diff, trend, sx, value }: RepresentantesProps):
               </Typography>
               <Typography variant="h4">{value}</Typography>
             </Stack>
-            <Avatar sx={{ backgroundColor: 'var(--mui-palette-primary-main)', height: '56px', width: '56px' }}>
-              <UsersIcon fontSize="var(--icon-fontSize-lg)" />
-            </Avatar>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#630100', borderRadius: '32px', height: '56px', width: '56px' }}>
+            <Users style={{ color: '#fff'}} fontSize="var(--icon-fontSize-lg)" weight="bold" />
+            </div>
           </Stack>
         </Stack>
       </CardContent>

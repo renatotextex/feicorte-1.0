@@ -3,50 +3,53 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
+// import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
+// import Divider from '@mui/material/Divider';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { SxProps } from '@mui/material/styles';
 import { ArrowClockwise as ArrowClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowClockwise';
-import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
+// import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import type { ApexOptions } from 'apexcharts';
 
 import { Chart } from '@/components/core/chart';
 
 export interface SalesProps {
   chartSeries: { name: string; data: number[] }[];
-  sx?: SxProps;
+  xaxisCategories: string[];
+  sx?: SxProps
+  title?: string;
+  onRefresh: () => void;
 }
 
-export function Sales({ chartSeries, sx }: SalesProps): React.JSX.Element {
-  const chartOptions = useChartOptions();
+export function Sales({ chartSeries, sx, title, xaxisCategories, onRefresh  }: SalesProps): React.JSX.Element {
+  const chartOptions = useChartOptions(xaxisCategories);
 
   return (
     <Card sx={sx}>
       <CardHeader
         action={
-          <Button color="inherit" size="small" startIcon={<ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}>
-            Sync
+          <Button onClick={onRefresh} color="inherit" size="small" startIcon={<ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}>
+            Atualizar
           </Button>
         }
-        title="Sales"
+        title={title}
       />
       <CardContent>
         <Chart height={350} options={chartOptions} series={chartSeries} type="bar" width="100%" />
       </CardContent>
-      <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button color="inherit" endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />} size="small">
-          Overview
-        </Button>
-      </CardActions>
+      {/*<Divider />*/}
+      {/*<CardActions sx={{ justifyContent: 'flex-end' }}>*/}
+      {/*  <Button color="inherit" endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />} size="small">*/}
+      {/*    Overview*/}
+      {/*  </Button>*/}
+      {/*</CardActions>*/}
     </Card>
   );
 }
 
-function useChartOptions(): ApexOptions {
+function useChartOptions(xaxisCategories: string[]): ApexOptions {
   const theme = useTheme();
 
   return {
@@ -67,12 +70,12 @@ function useChartOptions(): ApexOptions {
     xaxis: {
       axisBorder: { color: theme.palette.divider, show: true },
       axisTicks: { color: theme.palette.divider, show: true },
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      categories: xaxisCategories,
       labels: { offsetY: 5, style: { colors: theme.palette.text.secondary } },
     },
     yaxis: {
       labels: {
-        formatter: (value) => (value > 0 ? `${value}K` : `${value}`),
+        formatter: (value) => (value > 0 ? `${value}` : `${value}`),
         offsetX: -10,
         style: { colors: theme.palette.text.secondary },
       },

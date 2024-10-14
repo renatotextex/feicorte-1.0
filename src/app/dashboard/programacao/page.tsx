@@ -9,6 +9,10 @@ import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { ProgramacaoTable } from '@/components/dashboard/programacao/programacao-table';
 import type { Programacao } from '@/components/dashboard/programacao/programacao-table';
 import { ProgramacoesAddForm } from "@/components/dashboard/programacao/programacao-add-form";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Dialog from "@mui/material/Dialog";
 //import axios from 'axios';
 
 // export const metadata = { title: `Customers | Dashboard | ${config.site.name}` } satisfies Metadata;
@@ -17,9 +21,11 @@ import { ProgramacoesAddForm } from "@/components/dashboard/programacao/programa
 const listaProgramacoes: Programacao[] = [];
 
 export default function Page(): React.JSX.Element {
-  const [programacaos, setProgramacoes] = React.useState<Programacao[]>(listaProgramacoes);
+  const [programacoes, setProgramacoes] = React.useState<Programacao[]>(listaProgramacoes);
   const [showForm, setShowForm] = React.useState(false);
   const [editProgramacao, setEditProgramacao] = React.useState<Programacao | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [programacaoToDelete, setProgramacaoToDelete] = React.useState<string | null>(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
@@ -31,8 +37,8 @@ export default function Page(): React.JSX.Element {
 
   const handleAddProgramacao = async (newProgramacao: Programacao) => {
     try {
-      // Exemplo de chamada à API usando Axios
-      // const response = await axios.post('/api/programacaos', newProgramacao);
+
+      // const response = await axios.post('/api/programacoes', newProgramacao);
       // setProgramacoes(prev => [...prev, response.data]);
 
       setProgramacoes(prev => {
@@ -49,29 +55,29 @@ export default function Page(): React.JSX.Element {
   };
 
   const handleEdit = (id: string) => {
-    const programacaoEditar = programacaos.find(rep => rep.id === id);
+    const programacaoEditar = programacoes.find(rep => rep.id === id);
     if (programacaoEditar) {
       setShowForm(true);
       setEditProgramacao(programacaoEditar);
     }
   };
 
-  const handleDelete = (id: string) => {
-    try {
-      //await axios.delete(`/api/programacaos/${id}`);
-      setProgramacoes(programacaos.filter(rep => rep.id !== id));
-    } catch (error) {
-      console.error('Erro ao excluir programacao:', error);
-    }
-  };
+  // const handleDelete = (id: string) => {
+  //   try {
+  //     //await axios.delete(`/api/programacoes/${id}`);
+  //     setProgramacoes(programacoes.filter(rep => rep.id !== id));
+  //   } catch (error) {
+  //     console.error('Erro ao excluir programacao:', error);
+  //   }
+  // };
 
   React.useEffect(() => {
     const fetchProgramacoes = async () => {
       try {
-        //const response = await axios.get('/api/programacaos');
+        //const response = await axios.get('/api/programacoes');
         //setProgramacoes(response.data);
       } catch (error) {
-        console.error('Erro ao buscar programacaos:', error);
+        console.error('Erro ao buscar programacoes:', error);
       }
     };
 
@@ -87,7 +93,30 @@ export default function Page(): React.JSX.Element {
     setPage(0);
   };
 
-  const paginatedProgramacoes = applyPagination(programacaos, page, rowsPerPage);
+  const handleDelete = (id: string) => {
+    setProgramacaoToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (programacaoToDelete) {
+      try {
+        //await axios.delete(`/representantes/${representanteToDelete}`);
+        setProgramacoes(programacoes.filter(rep => rep.id !== programacaoToDelete));
+      } catch (error) {
+        console.error('Erro ao excluir palestrante:', error);
+      }
+      setDeleteDialogOpen(false);
+      setProgramacaoToDelete(null);
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setProgramacaoToDelete(null);
+  };
+
+  const paginatedProgramacoes = applyPagination(programacoes, page, rowsPerPage);
 
   return (
     <Stack spacing={3}>
@@ -112,7 +141,7 @@ export default function Page(): React.JSX.Element {
         <>
           {/*<CustomersFilters />*/}
           <ProgramacaoTable
-            count={programacaos.length}
+            count={programacoes.length}
             page={page}
             rows={paginatedProgramacoes}
             rowsPerPage={rowsPerPage}
@@ -123,6 +152,22 @@ export default function Page(): React.JSX.Element {
           />
         </>
       )}
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <Typography>Você tem certeza que deseja excluir esta programação?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} variant="contained" color="primary"
+                  sx={{ borderRadius: 2, boxShadow: 6 }}>
+            Cancelar
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" color="secondary" style={{ marginLeft: '10px' }}
+                  sx={{ borderRadius: 2, boxShadow: 6 }}>
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

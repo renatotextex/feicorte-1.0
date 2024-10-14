@@ -29,7 +29,7 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { email: 'usuario@feicorte.com.br', password: '123' } satisfies Values;
+const defaultValues = { email: 'admin@admin.com', password: 'feicorte2024' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -73,12 +73,12 @@ export function SignInForm(): React.JSX.Element {
     <Stack spacing={4}>
       <Stack spacing={1}>
         <Typography variant="h4">Login</Typography>
-        <Typography color="text.secondary" variant="body2">
-          Não possui uma conta?{' '}
-          <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
-            Cadastre-se
-          </Link>
-        </Typography>
+        {/*<Typography color="text.secondary" variant="body2">*/}
+        {/*  Não possui uma conta?{' '}*/}
+        {/*  <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">*/}
+        {/*    Cadastre-se*/}
+        {/*  </Link>*/}
+        {/*</Typography>*/}
       </Stack>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
@@ -138,16 +138,16 @@ export function SignInForm(): React.JSX.Element {
           </Button>
         </Stack>
       </form>
-      <Alert color="warning">
-        Use{' '}
-        <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-          usuario@feicorte.com.br
-        </Typography>{' '}
-        com a senha{' '}
-        <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
-          123
-        </Typography>
-      </Alert>
+      {/*<Alert color="warning">*/}
+      {/*  Use{' '}*/}
+      {/*  <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">*/}
+      {/*    usuario@feicorte.com.br*/}
+      {/*  </Typography>{' '}*/}
+      {/*  com a senha{' '}*/}
+      {/*  <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">*/}
+      {/*    123*/}
+      {/*  </Typography>*/}
+      {/*</Alert>*/}
     </Stack>
   );
 }

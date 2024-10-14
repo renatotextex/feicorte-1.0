@@ -16,17 +16,12 @@ import Button from '@mui/material/Button';
 import dayjs from 'dayjs';
 
 export interface Representante {
-  cnpj: string;
-  cpf: string;
-  time: dayjs.ConfigType;
-  gender: string;
   id: string;
-  avatar: string;
+  empresa: string;
   name: string;
+  cpf: string;
   email: string;
-  address: { city: string; state: string; country: string; street: string };
   phone: string;
-  date: string;
   createdAt: Date;
 }
 
@@ -67,10 +62,11 @@ export function RepresentantesTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
+              <TableCell>Empresa</TableCell>
               <TableCell>Nome</TableCell>
+              <TableCell>CPF</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Localização</TableCell>
-              <TableCell>Contato</TableCell>
+              <TableCell>Telefone</TableCell>
               <TableCell>Data de Inclusão</TableCell>
               <TableCell>Ações</TableCell>
             </TableRow>
@@ -80,15 +76,16 @@ export function RepresentantesTable({
               <TableRow hover key={row.id}>
                 <TableCell>
                   <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                    <Typography variant="subtitle2">{row.name}</Typography>
+                    <Typography variant="subtitle2">{row.empresa}</Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>{row.email}</TableCell>
+                <TableCell>{row.name}</TableCell>
                 <TableCell>
-                  {row.address.city}, {row.address.state}, {row.address.country}
+                  {row.cpf}
                 </TableCell>
+                <TableCell>{row.email}</TableCell>
                 <TableCell>{row.phone}</TableCell>
-                <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
+                <TableCell>{dayjs(row.createdAt).format('DD/MM/YYYY')}</TableCell>
                 <TableCell>
                   <Button variant="contained" color="primary" onClick={() => { onEdit(row.id)}}
                           sx={{ borderRadius: 2, boxShadow: 6 }}>

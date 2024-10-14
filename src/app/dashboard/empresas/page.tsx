@@ -9,19 +9,42 @@ import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { EmpresasTable } from '@/components/dashboard/empresas/empresas-table';
 import type { Empresa } from '@/components/dashboard/empresas/empresas-table';
 import { EmpresasAddForm } from "@/components/dashboard/empresas/empresas-add-form";
-//import axios from 'axios';
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Dialog from "@mui/material/Dialog";
+import axios from 'axios';
 
-// export const metadata = { title: `Customers | Dashboard | ${config.site.name}` } satisfies Metadata;
-
-//const listaEmpresas: Empresa[] = [] satisfies Empresa[];
 const listaEmpresas: Empresa[] = [];
 
 export default function Page(): React.JSX.Element {
   const [empresas, setEmpresas] = React.useState<Empresa[]>(listaEmpresas);
   const [showForm, setShowForm] = React.useState(false);
   const [editEmpresa, setEditEmpresa] = React.useState<Empresa | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [empresaToDelete, setEmpresaToDelete] = React.useState<string | null>(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+  //Listar empresas
+  const fetchEmpresas = async () => {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      const response = await axios.get('https://dev-service.feicortesp.com/companies', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setEmpresas(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar empresas:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchEmpresas();
+  }, []);
+
 
   const handleOpenForm = () => setShowForm(true);
   const handleCloseForm = () => {
@@ -55,14 +78,14 @@ export default function Page(): React.JSX.Element {
     }
   };
 
-  const handleDelete = (id: string) => {
-    try {
-      //await axios.delete(`/api/empresas/${id}`);
-      setEmpresas(empresas.filter(rep => rep.id !== id));
-    } catch (error) {
-      console.error('Erro ao excluir empresa:', error);
-    }
-  };
+  // const handleDelete = (id: string) => {
+  //   try {
+  //     //await axios.delete(`/api/empresas/${id}`);
+  //     setEmpresas(empresas.filter(rep => rep.id !== id));
+  //   } catch (error) {
+  //     console.error('Erro ao excluir empresa:', error);
+  //   }
+  // };
 
   React.useEffect(() => {
     const fetchEmpresas = async () => {
@@ -86,13 +109,36 @@ export default function Page(): React.JSX.Element {
     setPage(0);
   };
 
+  const handleDelete = (id: string) => {
+    setEmpresaToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (empresaToDelete) {
+      try {
+        //await axios.delete(`/representantes/${representanteToDelete}`);
+        setEmpresas(empresas.filter(rep => rep.id !== empresaToDelete));
+      } catch (error) {
+        console.error('Erro ao excluir palestrante:', error);
+      }
+      setDeleteDialogOpen(false);
+      setEmpresaToDelete(null);
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setEmpresaToDelete(null);
+  };
+
   const paginatedEmpresas = applyPagination(empresas, page, rowsPerPage);
 
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h5">Estandes / Empresas</Typography>
+          <Typography variant="h5">Empresas</Typography>
         </Stack>
         <div>
           {!showForm ? (
@@ -122,6 +168,22 @@ export default function Page(): React.JSX.Element {
           />
         </>
       )}
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <Typography>Você tem certeza que deseja excluir esta empresa?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} variant="contained" color="primary"
+                  sx={{ borderRadius: 2, boxShadow: 6 }}>
+            Cancelar
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" color="secondary" style={{ marginLeft: '10px' }}
+                  sx={{ borderRadius: 2, boxShadow: 6 }}>
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

@@ -8,13 +8,7 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
-import RadioGroup from '@mui/material/RadioGroup';
-import Radio from '@mui/material/Radio';
-import MenuItem from '@mui/material/MenuItem';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
 import Grid from '@mui/material/Grid2';
 import type { Empresa } from '@/components/dashboard/empresas/empresas-table';
 import {z as zod} from "zod";
@@ -22,135 +16,174 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import FormHelperText from "@mui/material/FormHelperText";
 import Alert from "@mui/material/Alert";
-import Typography from "@mui/material/Typography";
-import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from "dayjs";
 import 'dayjs/locale/pt-br';
-import CustomTextField from "@/components/dashboard/representantes/CustomTextField";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import InputMask from 'react-input-mask';
+import { OutlinedInput, Typography } from '@mui/material';
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Dialog from "@mui/material/Dialog";
+import axios from 'axios';
 
-const states = [
-  {value: 'acre', label: 'Acre'},
-  {value: 'alagoas', label: 'Alagoas'},
-  {value: 'amapa', label: 'Amapá'},
-  {value: 'amazonas', label: 'Amazonas'},
-  {value: 'bahia', label: 'Bahia'},
-  {value: 'ceara', label: 'Ceará'},
-  {value: 'distrito-federal', label: 'Distrito Federal'},
-  {value: 'espirito-santo', label: 'Espírito Santo'},
-  {value: 'goias', label: 'Goiás'},
-  {value: 'maranhao', label: 'Maranhão'},
-  {value: 'matogrosso', label: 'Mato Grosso'},
-  {value: 'matogrosso-do-sul', label: 'Mato Grosso do Sul'},
-  {value: 'minas-gerais', label: 'Minas Gerais'},
-  {value: 'para', label: 'Pará'},
-  {value: 'paraiba', label: 'Paraíba'},
-  {value: 'parana', label: 'Paraná'},
-  {value: 'pernambuco', label: 'Pernambuco'},
-  {value: 'piaui', label: 'Piauí'},
-  {value: 'rio-de-janeiro', label: 'Rio de Janeiro'},
-  {value: 'rio-grande-do-norte', label: 'Rio Grande do Norte'},
-  {value: 'rio-grande-do-sul', label: 'Rio Grande do Sul'},
-  {value: 'rondonia', label: 'Rondônia'},
-  {value: 'roraima', label: 'Roraima'},
-  {value: 'sao-paulo', label: 'São Paulo'},
-  {value: 'sergipe', label: 'Sergipe'},
-  {value: 'tocantins', label: 'Tocantins'},
+
+const estados = [
+  { value: 'AC', label: 'Acre' },
+  { value: 'AL', label: 'Alagoas' },
+  { value: 'AP', label: 'Amapá' },
+  { value: 'AM', label: 'Amazonas' },
+  { value: 'BA', label: 'Bahia' },
+  { value: 'CE', label: 'Ceará' },
+  { value: 'DF', label: 'Distrito Federal' },
+  { value: 'ES', label: 'Espírito Santo' },
+  { value: 'GO', label: 'Goiás' },
+  { value: 'MA', label: 'Maranhão' },
+  { value: 'MT', label: 'Mato Grosso' },
+  { value: 'MS', label: 'Mato Grosso do Sul' },
+  { value: 'MG', label: 'Minas Gerais' },
+  { value: 'PA', label: 'Pará' },
+  { value: 'PB', label: 'Paraíba' },
+  { value: 'PR', label: 'Paraná' },
+  { value: 'PE', label: 'Pernambuco' },
+  { value: 'PI', label: 'Piauí' },
+  { value: 'RJ', label: 'Rio de Janeiro' },
+  { value: 'RN', label: 'Rio Grande do Norte' },
+  { value: 'RS', label: 'Rio Grande do Sul' },
+  { value: 'RO', label: 'Rondônia' },
+  { value: 'RR', label: 'Roraima' },
+  { value: 'SC', label: 'Santa Catarina' },
+  { value: 'SP', label: 'São Paulo' },
+  { value: 'SE', label: 'Sergipe' },
+  { value: 'TO', label: 'Tocantins' },
 ] as const;
 
 
 interface EmpresasAddFormProps {
   onClose: () => void;
   gender?: 'masculino' | 'feminino' | 'nao_informar';
-  onAddEmpresa: (empresa: Empresa) => void;
+  onAddEmpresa: (empresa: { descritivo: string; createdAt: Date; identificacao: string; id: string; empresa: string }) => void;
   empresa?: Empresa | null;
 }
 
 const schema = zod.object({
-  name: zod.string().min(1, {message: 'Nome é obrigatório'}),
-  surname: zod.string().min(1, {message: 'Sobrenome é obrigatório'}),
-  email: zod.string().min(1, {message: 'Email é obrigatório'}).email({message: 'Formato de email inválido'}),
-  phone: zod.string().optional(),
-  address: zod.string().optional(),
-  cpf: zod.string().optional(),
-  cnpj: zod.string().optional(),
-  city: zod.string().optional(),
-  state: zod.string().nonempty({message: 'Estado é obrigatório'}),
-  gender: zod.enum(['masculino', 'feminino', 'nao_informar'], {required_error: 'Por favor, selecione uma opção de sexo.'}),
-  date: zod.date().refine(value => !isNaN(value.getTime()), { message: 'Data é obrigatória' }),
-  time: zod.date().refine(value => !isNaN(value.getTime()), { message: 'Hora é obrigatória' }),
-
+  name: zod.string().min(1, {message: 'Razão Social é obrigatório'}),
+  trading_name: zod.string().min(1, {message: 'Nome Fantasia é obrigatório'}),
+  cnpj: zod.string().min(1, {message: 'CNPJ é obrigatório'}),
+  description: zod.string().optional(),
+  address: zod.string().min(1, {message: 'Endereço é obrigatório'}),
+  complement: zod.string().min(1, {message: 'Complemento é obrigatório'}),
+  region: zod.string().min(1, {message: 'Bairro é obrigatório'}),
+  city: zod.string().min(1, {message: 'Cidade é obrigatório'}),
+  state: zod.string().min(1, {message: 'Estado é obrigatório'}),
+  cep: zod.string().min(1, {message: 'Cep é obrigatório'}),
+  contact_email: zod.string().min(1, { message: "E-mail é obrigatório" }).email({ message: "E-mail inválido" }),
+  contact_phone: zod.string().min(1, { message: "Telefone é obrigatório" }).max(12, { message: "Telefone não pode ter mais de 12 caracteres" })
+                        .regex(/^\d{1,12}$/, { message: "Telefone deve conter apenas números" }),
+  linkedin_url: zod.string().min(1, {message: 'Links é obrigatório'}),
+  site_url: zod.string().min(1, {message: 'link é obrigatório'}),
 });
 
 type FormData = zod.infer<typeof schema>;
 
 
 export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFormProps): React.JSX.Element {
+  const [errorDialogOpen, setErrorDialogOpen] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState('');
   const {control, handleSubmit, formState: {errors}, reset} = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      name: '',
-      surname: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      gender: undefined,
-      date: undefined,
-      time: undefined,
-      cpf: '',
-      cnpj: '',
-    },
+      defaultValues: {
+        name: '',
+        trading_name: '',
+        cnpj: '',
+        description: '',
+        address: '',
+        complement: '',
+        region: '',
+        city: '',
+        state: '',
+        cep: '',
+        contact_email: '',
+        contact_phone: '',
+        linkedin_url: '',
+        site_url: '',
+      },
     mode: 'onChange',
   });
 
   React.useEffect(() => {
     if (empresa) {
       reset({
-        name: empresa.name.split(' ')[0] || '',
-        surname: empresa.name.split(' ').slice(1).join(' ') || '',
-        email: empresa.email || '',
-        phone: empresa.phone || '',
-        address: empresa.address.street || '',
-        city: empresa.address.city || '',
-        state: empresa.address.state || '',
-        gender: formatGender(empresa.gender),
-        date: dayjs(empresa.date, 'DD/MM/YYYY').toDate(),
-        time: dayjs(empresa.time, 'HH:mm').toDate(),
-        cpf: empresa.cpf,
-        cnpj: empresa.cnpj,
+        name: empresa.name || '',
+        trading_name: empresa.trading_name || '',
+        cnpj: empresa.cnpj || '',
+        description: empresa.description || '',
+        address: empresa.address || '',
+        complement: empresa.complement || '',
+        region: empresa.region || '',
+        city: empresa.city || '',
+        state: empresa.state || '',
+        cep: empresa.cep || '',
+        contact_email: empresa.contact_email || '',
+        contact_phone: empresa.contact_phone || '',
+        linkedin_url: empresa.linkedin_url || '',
+        site_url: empresa.site_url || '',
       });
     } else {
       reset();
     }
   }, [empresa, reset]);
 
-  const formatGender = (gender: string | undefined): "masculino" | "feminino" | "nao_informar" | undefined => {
-    if (gender === "masculino" || gender === "feminino" || gender === "nao_informar") {
-      return gender;
-    }
-    return undefined;
-  };
 
-  const onSubmit = (data: FormData) => {
-    const newEmpresa: Empresa = {
-      id: `REP-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-      name: `${data.name} ${data.surname}`,
-      email: data.email,
-      phone: data.phone || '',
-      gender: data.gender || undefined,
-      address: {city: data.city || '', state: data.state, country: '', street: data.address || ''},
+  const onSubmit = async (data: FormData) => {
+
+    const newEmpresa = {
+      name: data.name,
+      trading_name: data.trading_name,
+      cnpj: data.cnpj,
+      description: data.description,
+      address: data.address,
+      complement: data.complement,
+      region: data.region,
+      city: data.city,
+      state: data.state,
+      cep: data.cep,
+      contact_email: data.contact_email,
+      contact_phone: data.contact_phone,
+      linkedin_url: data.linkedin_url,
+      site_url: data.site_url,
       createdAt: new Date(),
-      avatar: '',
-      date: dayjs(data.date).format('DD/MM/YYYY'),
-      time: dayjs(data.time).format('HH:mm'),
-      cpf: data.cpf || '',
-      cnpj: data.cnpj || ''
     };
 
-    onAddEmpresa(newEmpresa);
+
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      const response = await axios.post('https://dev-service.feicortesp.com/companies', newEmpresa, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('Empresa criada com sucesso:', response.data);
+      reset();
+      onClose();
+    } catch (error) {
+      console.table(error.response?.data?.message);
+      setErrorMessage(error.response?.data?.message || 'Ocorreu um erro inesperado');
+      setErrorDialogOpen(true);
+
+
+    }
+    //const newEmpresa: { descritivo: string; createdAt: Date; identificacao: string; id: string; empresa: string } = {
+
+    //};
+
+    //onAddEmpresa(newEmpresa);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, onChange: (value: string) => void) => {
+    const value = event.target.value.replace(/\D/g, ''); // Remove qualquer caractere que não seja dígito
+    onChange(value);
   };
 
   return (
@@ -159,17 +192,17 @@ export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFor
         <CardHeader subheader="Preencha os campos abaixo" title="Adicionar empresa"/>
         <Divider/>
         <CardContent>
-          <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+          <Grid container rowSpacing={1} columnSpacing={{xs: 1, sm: 2, md: 3}}>
             <Grid size={6}>
               <FormControl fullWidth error={Boolean(errors.name)}>
-                <InputLabel>Nome</InputLabel>
+                <InputLabel>Razão Social</InputLabel>
                 <Controller
                   name="name"
                   control={control}
                   render={({field}) => (
                     <OutlinedInput
                       {...field}
-                      label="Nome"
+                      label="Razão Social"
                     />
                   )}
                 />
@@ -177,43 +210,19 @@ export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFor
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.surname)}>
-                <InputLabel>Sobrenome</InputLabel>
+              <FormControl fullWidth error={Boolean(errors.trading_name)}>
+                <InputLabel>Nome Fantasia</InputLabel>
                 <Controller
-                  name="surname"
+                  name="trading_name"
                   control={control}
                   render={({field}) => (
                     <OutlinedInput
                       {...field}
-                      label="Sobrenome"
+                      label="Nome Fantasia"
                     />
                   )}
                 />
-                {errors.surname ? <FormHelperText>{errors.surname.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.cpf)}>
-                <InputLabel>CPF</InputLabel>
-                <Controller
-                  name="cpf"
-                  control={control}
-                  render={({ field }) => (
-                    <InputMask
-                      {...field}
-                      mask="999.999.999-99"
-                      maskChar={null}
-                    >
-                      {(inputProps: React.ComponentProps<typeof OutlinedInput>) => (
-                        <OutlinedInput
-                          {...inputProps}
-                          label="CPF"
-                        />
-                      )}
-                    </InputMask>
-                  )}
-                />
-                {errors.cpf ? <FormHelperText>{errors.cpf.message}</FormHelperText> : null}
+                {errors.trading_name ? <FormHelperText>{errors.trading_name.message}</FormHelperText> : null}
               </FormControl>
             </Grid>
             <Grid size={6}>
@@ -222,15 +231,17 @@ export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFor
                 <Controller
                   name="cnpj"
                   control={control}
-                  render={({ field }) => (
+                  render={({field}) => (
                     <InputMask
-                      {...field}
                       mask="99.999.999/9999-99"
-                      maskChar={null}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
                     >
-                      {(inputProps: React.ComponentProps<typeof OutlinedInput>) => (
+                      {(inputProps: any) => (
                         <OutlinedInput
                           {...inputProps}
+                          inputRef={field.ref}
                           label="CNPJ"
                         />
                       )}
@@ -241,79 +252,22 @@ export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFor
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <Controller
-                name="email"
-                control={control}
-                render={({field}) => (
-                  <FormControl fullWidth error={Boolean(errors.email)}>
-                    <InputLabel>Email</InputLabel>
-                    <OutlinedInput
-                      {...field}
-                      label="Email"
-                      type="email"
-                    />
-                    {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
-                  </FormControl>
-                )}
-              />
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.phone)}> {/* Linha alterada */}
-                <InputLabel>Telefone</InputLabel>
+              <FormControl fullWidth error={Boolean(errors.description)}>
+                <InputLabel>Descrição</InputLabel>
                 <Controller
-                  name="phone"
+                  name="description"
                   control={control}
                   render={({field}) => (
                     <OutlinedInput
                       {...field}
-                      label="Telefone"
-                      type="tel"
+                      label="Descrição"
                     />
                   )}
                 />
-                {errors.phone ? <FormHelperText>{errors.phone.message}</FormHelperText> : null}
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.state)}> {/* Linha alterada */}
-                <InputLabel>Estado</InputLabel>
-                <Controller
-                  name="state"
-                  control={control}
-                  render={({field}) => (
-                    <Select
-                      {...field}
-                      label="Estado"
-                    >
-                      {states.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-                {errors.state ? <FormHelperText>{errors.state.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.city)}> {/* Linha alterada */}
-                <InputLabel>Cidade</InputLabel>
-                <Controller
-                  name="city"
-                  control={control}
-                  render={({field}) => (
-                    <OutlinedInput
-                      {...field}
-                      label="Cidade"
-                    />
-                  )}
-                />
-                {errors.city ? <FormHelperText>{errors.city.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.address)}> {/* Linha alterada */}
+              <FormControl fullWidth error={Boolean(errors.address)}>
                 <InputLabel>Endereço</InputLabel>
                 <Controller
                   name="address"
@@ -329,83 +283,170 @@ export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFor
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.date)}>
+              <FormControl fullWidth error={Boolean(errors.complement)}>
+                <InputLabel>Complemento</InputLabel>
                 <Controller
-                  name="date"
+                  name="complement"
                   control={control}
-                  render={({ field }) => (
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        {...field}
-                        label="Data"
-                        format="DD/MM/YYYY"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(newValue) => {
-                          const dateObject = newValue ? newValue.toDate() : null;
-                          //const dateObject = new Date(dayValue);
-                          field.onChange(dateObject);
-                        }}
-                        slots={{
-                          textField: CustomTextField,
-                        }}
-                      />
-                    </LocalizationProvider>
+                  render={({field}) => (
+                    <OutlinedInput
+                      {...field}
+                      label="Complemento"
+                    />
                   )}
                 />
-                {errors.date && <FormHelperText>{errors.date.message}</FormHelperText>}
+                {errors.complement ? <FormHelperText>{errors.complement.message}</FormHelperText> : null}
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.time)}>
+              <FormControl fullWidth error={Boolean(errors.region)}>
+                <InputLabel>Bairro</InputLabel>
                 <Controller
-                  name="time"
+                  name="region"
                   control={control}
-                  render={({ field }) => (
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <TimePicker
-                        {...field}
-                        label="Hora"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(newValue) => {
-                          const dayValue = newValue ? newValue.toISOString() : null;
-                          const dateObject = new Date(dayValue);
-                          field.onChange(dateObject);
-                        }}
-                        slots={{
-                          textField: CustomTextField, // Passando CustomTextField diretamente
-                        }}
-                        ampm={false}
-                      />
-                    </LocalizationProvider>
+                  render={({field}) => (
+                    <OutlinedInput
+                      {...field}
+                      label="Bairro"
+                    />
                   )}
                 />
-                {errors?.time && <FormHelperText>{errors?.time.message}</FormHelperText>}
+                {errors.region ? <FormHelperText>{errors.region.message}</FormHelperText> : null}
               </FormControl>
             </Grid>
-            <Grid direction="column" md={6} xs={12} >
-              <FormControl component="fieldset" error={Boolean(errors.gender)}>
-                <Typography variant="h6">Sexo:</Typography>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.city)}>
+                <InputLabel>Cidade</InputLabel>
                 <Controller
-                  name="gender"
+                  name="city"
                   control={control}
-                  defaultValue={undefined}
                   render={({field}) => (
-                    <RadioGroup {...field} value={field.value || ''} onChange={field.onChange}>
-                      <FormControlLabel value="masculino"
-                                        control={<Radio sx={{color: '#727272', '&.Mui-checked': {color: '#4F0100'}}}/>}
-                                        label="Masculino"/>
-                      <FormControlLabel value="feminino"
-                                        control={<Radio sx={{color: '#727272', '&.Mui-checked': {color: '#4F0100'}}}/>}
-                                        label="Feminino"/>
-                      <FormControlLabel value="nao_informar"
-                                        control={<Radio sx={{color: '#727272', '&.Mui-checked': {color: '#4F0100'}}}/>}
-                                        label="Não quero informar"/>
-                    </RadioGroup>
+                    <OutlinedInput
+                      {...field}
+                      label="Cidade"
+                    />
                   )}
                 />
-                {errors.gender ? <FormHelperText>{errors.gender.message}</FormHelperText> : null}
+                {errors.city ? <FormHelperText>{errors.city.message}</FormHelperText> : null}
               </FormControl>
-          </Grid>
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.state)}>
+                <InputLabel>Estado</InputLabel>
+                <Controller
+                  name="state"
+                  control={control}
+                  render={({field}) => (
+                    <Select
+                      {...field}
+                      label="Estado"
+                    >
+                      {estados.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.state ? <FormHelperText>{errors.state.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.cep)}>
+                <InputLabel>CEP</InputLabel>
+                <Controller
+                  name="cep"
+                  control={control}
+                  render={({field}) => (
+                    <InputMask
+                      mask="99999-999"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    >
+                      {(inputProps: any) => (
+                        <OutlinedInput
+                          {...inputProps}
+                          inputRef={field.ref}
+                          label="CEP"
+                        />
+                      )}
+                    </InputMask>
+                  )}
+                />
+                {errors.cep ? <FormHelperText>{errors.cep.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.contact_email)}>
+                <InputLabel>E-mail</InputLabel>
+                <Controller
+                  name="contact_email"
+                  control={control}
+                  render={({field}) => (
+                    <OutlinedInput
+                      {...field}
+                      label="E-mail"
+                    />
+                  )}
+                />
+                {errors.contact_email ? <FormHelperText>{errors.contact_email.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.contact_phone)}>
+                <InputLabel>Telefone</InputLabel>
+                <Controller
+                  name="contact_phone"
+                  control={control}
+                  render={({field}) => (
+                    <OutlinedInput
+                      {...field}
+                      label="Telefone"
+                      onChange={(event) => handleInputChange(event, field.onChange)}
+                      inputProps={{
+                        maxLength: 12,
+                        type: "tel"
+                      }}
+                    />
+                  )}
+                />
+                {errors.contact_phone ? <FormHelperText>{errors.contact_phone.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.linkedin_url)}>
+                <InputLabel>Links Redes Sociais</InputLabel>
+                <Controller
+                  name="linkedin_url"
+                  control={control}
+                  render={({field}) => (
+                    <OutlinedInput
+                      {...field}
+                      label="Links Redes Sociais"
+                    />
+                  )}
+                />
+                {errors.linkedin_url ? <FormHelperText>{errors.linkedin_url.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.site_url)}>
+                <InputLabel>Link de Sites</InputLabel>
+                <Controller
+                  name="site_url"
+                  control={control}
+                  render={({field}) => (
+                    <OutlinedInput
+                      {...field}
+                      label="Link de Sites"
+                    />
+                  )}
+                />
+                {errors.site_url ? <FormHelperText>{errors.site_url.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
           </Grid>
         </CardContent>
         <Divider/>
@@ -415,6 +456,20 @@ export function EmpresasAddForm({onClose, onAddEmpresa, empresa}: EmpresasAddFor
         </CardActions>
       </Card>
       {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+      <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
+        <DialogTitle>Erro</DialogTitle>
+        <DialogContent>
+          <Typography>{errorMessage}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErrorDialogOpen(false)} variant="contained" color="primary"
+                  sx={{ borderRadius: 2, boxShadow: 6 }}>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </form>
-  );
+
+
+);
 }

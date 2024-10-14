@@ -8,10 +8,7 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
-import RadioGroup from '@mui/material/RadioGroup';
-import Radio from '@mui/material/Radio';
 import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
@@ -22,42 +19,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import FormHelperText from "@mui/material/FormHelperText";
 import Alert from "@mui/material/Alert";
-import Typography from "@mui/material/Typography";
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from "dayjs";
 import 'dayjs/locale/pt-br';
 import CustomTextField from "@/components/dashboard/representantes/CustomTextField";
-import InputMask from 'react-input-mask';
+import TextField from "@mui/material/TextField";
 
-const states = [
-  {value: 'acre', label: 'Acre'},
-  {value: 'alagoas', label: 'Alagoas'},
-  {value: 'amapa', label: 'Amapá'},
-  {value: 'amazonas', label: 'Amazonas'},
-  {value: 'bahia', label: 'Bahia'},
-  {value: 'ceara', label: 'Ceará'},
-  {value: 'distrito-federal', label: 'Distrito Federal'},
-  {value: 'espirito-santo', label: 'Espírito Santo'},
-  {value: 'goias', label: 'Goiás'},
-  {value: 'maranhao', label: 'Maranhão'},
-  {value: 'matogrosso', label: 'Mato Grosso'},
-  {value: 'matogrosso-do-sul', label: 'Mato Grosso do Sul'},
-  {value: 'minas-gerais', label: 'Minas Gerais'},
-  {value: 'para', label: 'Pará'},
-  {value: 'paraiba', label: 'Paraíba'},
-  {value: 'parana', label: 'Paraná'},
-  {value: 'pernambuco', label: 'Pernambuco'},
-  {value: 'piaui', label: 'Piauí'},
-  {value: 'rio-de-janeiro', label: 'Rio de Janeiro'},
-  {value: 'rio-grande-do-norte', label: 'Rio Grande do Norte'},
-  {value: 'rio-grande-do-sul', label: 'Rio Grande do Sul'},
-  {value: 'rondonia', label: 'Rondônia'},
-  {value: 'roraima', label: 'Roraima'},
-  {value: 'sao-paulo', label: 'São Paulo'},
-  {value: 'sergipe', label: 'Sergipe'},
-  {value: 'tocantins', label: 'Tocantins'},
+const events = [
+  {value: 'evento-1', label: 'Evento 1'},
 ] as const;
+
+const palestrante = [
+  {value: 'palestrante-1', label: 'Palestrante 1'},
+] as const;
+
 
 
 interface ProgramacoesAddFormProps {
@@ -68,19 +44,12 @@ interface ProgramacoesAddFormProps {
 }
 
 const schema = zod.object({
-  name: zod.string().min(1, {message: 'Nome é obrigatório'}),
-  surname: zod.string().min(1, {message: 'Sobrenome é obrigatório'}),
-  email: zod.string().min(1, {message: 'Email é obrigatório'}).email({message: 'Formato de email inválido'}),
-  phone: zod.string().optional(),
-  address: zod.string().optional(),
-  cpf: zod.string().optional(),
-  cnpj: zod.string().optional(),
-  city: zod.string().optional(),
-  state: zod.string().nonempty({message: 'Estado é obrigatório'}),
-  gender: zod.enum(['masculino', 'feminino', 'nao_informar'], {required_error: 'Por favor, selecione uma opção de sexo.'}),
+  event: zod.string().nonempty({message: 'Evento é obrigatório'}),
   date: zod.date().refine(value => !isNaN(value.getTime()), { message: 'Data é obrigatória' }),
   time: zod.date().refine(value => !isNaN(value.getTime()), { message: 'Hora é obrigatória' }),
-
+  location: zod.string().min(1, {message: 'Local é obrigatório'}),
+  description: zod.string().optional(),
+  palestrante: zod.string().optional()
 });
 
 type FormData = zod.infer<typeof schema>;
@@ -90,18 +59,12 @@ export function ProgramacoesAddForm({onClose, onAddProgramacao, programacao}: Pr
   const {control, handleSubmit, formState: {errors}, reset} = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
-      surname: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      gender: undefined,
+      event: '',
       date: undefined,
       time: undefined,
-      cpf: '',
-      cnpj: '',
+      location: '',
+      description: '',
+      palestrante: '',
     },
     mode: 'onChange',
   });
@@ -109,45 +72,30 @@ export function ProgramacoesAddForm({onClose, onAddProgramacao, programacao}: Pr
   React.useEffect(() => {
     if (programacao) {
       reset({
-        name: programacao.name.split(' ')[0] || '',
-        surname: programacao.name.split(' ').slice(1).join(' ') || '',
-        email: programacao.email || '',
-        phone: programacao.phone || '',
-        address: programacao.address.street || '',
-        city: programacao.address.city || '',
-        state: programacao.address.state || '',
-        gender: formatGender(programacao.gender),
+        event: programacao.event.split(' ')[0] || '',
         date: dayjs(programacao.date, 'DD/MM/YYYY').toDate(),
         time: dayjs(programacao.time, 'HH:mm').toDate(),
-        cpf: programacao.cpf,
-        cnpj: programacao.cnpj,
+        location: programacao.location || '',
+        description: programacao.description || '',
+        palestrante: programacao.palestrante || '',
       });
     } else {
       reset();
     }
   }, [programacao, reset]);
 
-  const formatGender = (gender: string | undefined): "masculino" | "feminino" | "nao_informar" | undefined => {
-    if (gender === "masculino" || gender === "feminino" || gender === "nao_informar") {
-      return gender;
-    }
-    return undefined;
-  };
 
   const onSubmit = (data: FormData) => {
     const newProgramacao: Programacao = {
       id: `REP-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-      name: `${data.name} ${data.surname}`,
-      email: data.email,
-      phone: data.phone || '',
-      gender: data.gender || undefined,
-      address: {city: data.city || '', state: data.state, country: '', street: data.address || ''},
-      createdAt: new Date(),
-      avatar: '',
+      event: data.event,
       date: dayjs(data.date).format('DD/MM/YYYY'),
       time: dayjs(data.time).format('HH:mm'),
-      cpf: data.cpf || '',
-      cnpj: data.cnpj || ''
+      location: data.location || '',
+      description: data.description || '',
+      palestrante: data.palestrante || '',
+      createdAt: new Date(),
+
     };
 
     onAddProgramacao(newProgramacao);
@@ -161,131 +109,17 @@ export function ProgramacoesAddForm({onClose, onAddProgramacao, programacao}: Pr
         <CardContent>
           <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
             <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.name)}>
-                <InputLabel>Nome</InputLabel>
+              <FormControl fullWidth error={Boolean(errors.event)}>
+                <InputLabel>Evento</InputLabel>
                 <Controller
-                  name="name"
-                  control={control}
-                  render={({field}) => (
-                    <OutlinedInput
-                      {...field}
-                      label="Nome"
-                    />
-                  )}
-                />
-                {errors.name ? <FormHelperText>{errors.name.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.surname)}>
-                <InputLabel>Sobrenome</InputLabel>
-                <Controller
-                  name="surname"
-                  control={control}
-                  render={({field}) => (
-                    <OutlinedInput
-                      {...field}
-                      label="Sobrenome"
-                    />
-                  )}
-                />
-                {errors.surname ? <FormHelperText>{errors.surname.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.cpf)}>
-                <InputLabel>CPF</InputLabel>
-                <Controller
-                  name="cpf"
-                  control={control}
-                  render={({ field }) => (
-                    <InputMask
-                      {...field}
-                      mask="999.999.999-99"
-                      maskChar={null}
-                    >
-                      {(inputProps: React.ComponentProps<typeof OutlinedInput>) => (
-                        <OutlinedInput
-                          {...inputProps}
-                          label="CPF"
-                        />
-                      )}
-                    </InputMask>
-                  )}
-                />
-                {errors.cpf ? <FormHelperText>{errors.cpf.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.cnpj)}>
-                <InputLabel>CNPJ</InputLabel>
-                <Controller
-                  name="cnpj"
-                  control={control}
-                  render={({ field }) => (
-                    <InputMask
-                      {...field}
-                      mask="99.999.999/9999-99"
-                      maskChar={null}
-                    >
-                      {(inputProps: React.ComponentProps<typeof OutlinedInput>) => (
-                        <OutlinedInput
-                          {...inputProps}
-                          label="CNPJ"
-                        />
-                      )}
-                    </InputMask>
-                  )}
-                />
-                {errors.cnpj ? <FormHelperText>{errors.cnpj.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <Controller
-                name="email"
-                control={control}
-                render={({field}) => (
-                  <FormControl fullWidth error={Boolean(errors.email)}>
-                    <InputLabel>Email</InputLabel>
-                    <OutlinedInput
-                      {...field}
-                      label="Email"
-                      type="email"
-                    />
-                    {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
-                  </FormControl>
-                )}
-              />
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.phone)}> {/* Linha alterada */}
-                <InputLabel>Telefone</InputLabel>
-                <Controller
-                  name="phone"
-                  control={control}
-                  render={({field}) => (
-                    <OutlinedInput
-                      {...field}
-                      label="Telefone"
-                      type="tel"
-                    />
-                  )}
-                />
-                {errors.phone ? <FormHelperText>{errors.phone.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.state)}> {/* Linha alterada */}
-                <InputLabel>Estado</InputLabel>
-                <Controller
-                  name="state"
+                  name="event"
                   control={control}
                   render={({field}) => (
                     <Select
                       {...field}
-                      label="Estado"
+                      label="Evento"
                     >
-                      {states.map((option) => (
+                      {events.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
                           {option.label}
                         </MenuItem>
@@ -293,39 +127,7 @@ export function ProgramacoesAddForm({onClose, onAddProgramacao, programacao}: Pr
                     </Select>
                   )}
                 />
-                {errors.state ? <FormHelperText>{errors.state.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.city)}> {/* Linha alterada */}
-                <InputLabel>Cidade</InputLabel>
-                <Controller
-                  name="city"
-                  control={control}
-                  render={({field}) => (
-                    <OutlinedInput
-                      {...field}
-                      label="Cidade"
-                    />
-                  )}
-                />
-                {errors.city ? <FormHelperText>{errors.city.message}</FormHelperText> : null}
-              </FormControl>
-            </Grid>
-            <Grid size={6}>
-              <FormControl fullWidth error={Boolean(errors.address)}> {/* Linha alterada */}
-                <InputLabel>Endereço</InputLabel>
-                <Controller
-                  name="address"
-                  control={control}
-                  render={({field}) => (
-                    <OutlinedInput
-                      {...field}
-                      label="Endereço"
-                    />
-                  )}
-                />
-                {errors.address ? <FormHelperText>{errors.address.message}</FormHelperText> : null}
+                {errors.event ? <FormHelperText>{errors.event.message}</FormHelperText> : null}
               </FormControl>
             </Grid>
             <Grid size={6}>
@@ -372,7 +174,7 @@ export function ProgramacoesAddForm({onClose, onAddProgramacao, programacao}: Pr
                           field.onChange(dateObject);
                         }}
                         slots={{
-                          textField: CustomTextField, // Passando CustomTextField diretamente
+                          textField: CustomTextField,
                         }}
                         ampm={false}
                       />
@@ -382,30 +184,66 @@ export function ProgramacoesAddForm({onClose, onAddProgramacao, programacao}: Pr
                 {errors?.time && <FormHelperText>{errors?.time.message}</FormHelperText>}
               </FormControl>
             </Grid>
-            <Grid direction="column" md={6} xs={12} >
-              <FormControl component="fieldset" error={Boolean(errors.gender)}>
-                <Typography variant="h6">Sexo:</Typography>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.location)}>
+                <InputLabel>Local</InputLabel>
                 <Controller
-                  name="gender"
+                  name="location"
                   control={control}
-                  defaultValue={undefined}
                   render={({field}) => (
-                    <RadioGroup {...field} value={field.value || ''} onChange={field.onChange}>
-                      <FormControlLabel value="masculino"
-                                        control={<Radio sx={{color: '#727272', '&.Mui-checked': {color: '#4F0100'}}}/>}
-                                        label="Masculino"/>
-                      <FormControlLabel value="feminino"
-                                        control={<Radio sx={{color: '#727272', '&.Mui-checked': {color: '#4F0100'}}}/>}
-                                        label="Feminino"/>
-                      <FormControlLabel value="nao_informar"
-                                        control={<Radio sx={{color: '#727272', '&.Mui-checked': {color: '#4F0100'}}}/>}
-                                        label="Não quero informar"/>
-                    </RadioGroup>
+                    <OutlinedInput
+                      {...field}
+                      label="location"
+                    />
                   )}
                 />
-                {errors.gender ? <FormHelperText>{errors.gender.message}</FormHelperText> : null}
+                {errors.location ? <FormHelperText>{errors.location.message}</FormHelperText> : null}
               </FormControl>
-          </Grid>
+            </Grid>
+            <Grid size={6}>
+              <Controller
+                name="description"
+                control={control}
+                render={({field}) => (
+                  <FormControl fullWidth error={Boolean(errors.description)}>
+                    <TextField
+                      {...field}
+                      label="Descrição"
+                      multiline
+                      minRows={3}
+                      maxRows={6}
+                      slotProps={{
+                        input: { 'aria-label': 'description' },
+                        htmlInput: { maxLength: 200 }
+                      }}
+                      helperText={errors.description ? errors.description.message : `${field.value.length}/200`}
+                    />
+                  </FormControl>
+                )}
+              />
+            </Grid>
+            <Grid size={6}>
+              <FormControl fullWidth error={Boolean(errors.palestrante)}>
+                <InputLabel>Palestrante</InputLabel>
+                <Controller
+                  name="palestrante"
+                  control={control}
+                  render={({field}) => (
+                    <Select
+                      {...field}
+                      label="Palestrante"
+                    >
+                      {palestrante.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.palestrante ? <FormHelperText>{errors.palestrante.message}</FormHelperText> : null}
+              </FormControl>
+            </Grid>
           </Grid>
         </CardContent>
         <Divider/>

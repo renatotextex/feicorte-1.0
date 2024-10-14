@@ -1,22 +1,24 @@
 'use client';
 
+import axios from 'axios';
 import type { User } from '@/types/user';
 
-function generateToken(): string {
-  const arr = new Uint8Array(12);
-  window.crypto.getRandomValues(arr);
-  return Array.from(arr, (v) => v.toString(16).padStart(2, '0')).join('');
-}
+// function generateToken(): string {
+//   const arr = new Uint8Array(12);
+//   window.crypto.getRandomValues(arr);
+//   return Array.from(arr, (v) => v.toString(16).padStart(2, '0')).join('');
+// }
 
-const user = {
-  id: 'USR-000',
-  avatar: '/assets/avatar.png',
-  firstName: 'user.nome',
-  lastName: 'user.sobrenome',
-  email: 'usuario@feicorte.com.br',
-} satisfies User;
+// const user = {
+//   id: 'USR-000',
+//   avatar: '/assets/avatar.png',
+//   firstName: '',
+//   lastName: '',
+//   email: 'admin@admin.com',
+// } satisfies User;
 
 export interface SignUpParams {
+  tipo: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -37,60 +39,61 @@ export interface ResetPasswordParams {
 }
 
 class AuthClient {
-  async signUp(_: SignUpParams): Promise<{ error?: string }> {
-    // Make API request
-
-    // We do not handle the API, so we'll just generate a token and store it in localStorage.
-    const token = generateToken();
-    localStorage.setItem('custom-auth-token', token);
-
-    return {};
-  }
-
-  async signInWithOAuth(_: SignInWithOAuthParams): Promise<{ error?: string }> {
-    return { error: 'Social authentication not implemented' };
-  }
-
   async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
     const { email, password } = params;
 
-    // Make API request
+    try {
+      const BASE_URL = 'https://dev-service.feicortesp.com';
+      const response = await axios.post(`${BASE_URL}/auth/login`, {
+        email,
+        password,
+      });
 
-    // We do not handle the API, so we'll check if the credentials match with the hardcoded ones.
-    if (email !== 'usuario@feicorte.com.br' || password !== '123') {
-      return { error: 'Usuário ou senha inválidos.' };
+      const token = response.data.access_token;
+      localStorage.setItem('custom-auth-token', token);
+
+      const userResponse = await this.getUser();
+      if (userResponse.error) {
+        return { error: userResponse.error };
+      }
+
+      return { user: userResponse.data };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Log do erro para depuração
+        console.error('Erro na requisição:', error);
+        return { error: error.response?.data?.message ?? 'Erro desconhecido.' };
+      } else {
+        console.error('Erro inesperado:', error);
+        return { error: 'Erro inesperado.' };
+      }
     }
-
-    const token = generateToken();
-    localStorage.setItem('custom-auth-token', token);
-
-    return {};
   }
 
-  async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
-    return { error: 'Password reset not implemented' };
-  }
-
-  async updatePassword(_: ResetPasswordParams): Promise<{ error?: string }> {
-    return { error: 'Update reset not implemented' };
-  }
 
   async getUser(): Promise<{ data?: User | null; error?: string }> {
-    // Make API request
-
-    // We do not handle the API, so just check if we have a token in localStorage.
     const token = localStorage.getItem('custom-auth-token');
 
     if (!token) {
       return { data: null };
     }
 
-    return { data: user };
+    try {
+      const response = await axios.get('https://dev-service.feicortesp.com/auth/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return { data: response.data as User }; // Supondo que a resposta da API inclua os dados do usuário
+    } catch (error) {
+      console.error('Erro ao obter dados do usuário:', error);
+      return { error: 'Erro ao obter o usuário.' };
+    }
   }
 
   async signOut(): Promise<{ error?: string }> {
     localStorage.removeItem('custom-auth-token');
-
     return {};
   }
 }

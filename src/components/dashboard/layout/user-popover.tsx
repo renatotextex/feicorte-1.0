@@ -16,6 +16,8 @@ import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
+import { useContext } from 'react';
+import { UserContext } from '@/contexts/user-context';
 
 export interface UserPopoverProps {
   anchorEl: Element | null;
@@ -48,6 +50,8 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
     }
   }, [checkSession, router]);
 
+  const userContext = useContext(UserContext);
+
   return (
     <Popover
       anchorEl={anchorEl}
@@ -57,9 +61,9 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       slotProps={{ paper: { sx: { width: '240px' } } }}
     >
       <Box sx={{ p: '16px 20px ' }}>
-        <Typography variant="subtitle1">user.nome</Typography>
+        <Typography variant="subtitle1">{userContext?.user?.name}</Typography>
         <Typography color="text.secondary" variant="body2">
-          user.email
+          {userContext?.user?.email}
         </Typography>
       </Box>
       <Divider />

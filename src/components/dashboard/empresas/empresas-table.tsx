@@ -16,18 +16,22 @@ import Button from '@mui/material/Button';
 import dayjs from 'dayjs';
 
 export interface Empresa {
-  cnpj: string;
-  cpf: string;
-  time: dayjs.ConfigType;
-  gender: string;
   id: string;
-  avatar: string;
-  name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
-  date: string;
-  createdAt: Date;
+  name: string,
+  trading_name: string,
+  cnpj: string,
+  description: string,
+  address: string,
+  complement: string,
+  region: string,
+  city: string,
+  state:  string,
+  cep: string,
+  contact_email: string,
+  contact_phone: string,
+  linkedin_url: string,
+  site_url: string,
+  created_at: Date;
 }
 
 interface EmpresasTableProps {
@@ -67,10 +71,20 @@ export function EmpresasTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Nome</TableCell>
+              <TableCell>Razão Social</TableCell>
+              <TableCell>Nome Fantasia</TableCell>
+              <TableCell>CNPJ</TableCell>
+              <TableCell>Descritivo</TableCell>
+              <TableCell>Endereço</TableCell>
+              <TableCell>Complemento</TableCell>
+              <TableCell>Bairro</TableCell>
+              <TableCell>Cidade</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell>CEP</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Localização</TableCell>
-              <TableCell>Contato</TableCell>
+              <TableCell>Telefone</TableCell>
+              <TableCell>Links</TableCell>
+              <TableCell>Link</TableCell>
               <TableCell>Data de Inclusão</TableCell>
               <TableCell>Ações</TableCell>
             </TableRow>
@@ -83,12 +97,20 @@ export function EmpresasTable({
                     <Typography variant="subtitle2">{row.name}</Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>
-                  {row.address.city}, {row.address.state}, {row.address.country}
-                </TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
+                <TableCell>{row.trading_name}</TableCell>
+                <TableCell>{row.cnpj}</TableCell>
+                <TableCell>{row.description}</TableCell>
+                <TableCell>{row.address}</TableCell>
+                <TableCell>{row.complement}</TableCell>
+                <TableCell>{row.region}</TableCell>
+                <TableCell>{row.city}</TableCell>
+                <TableCell>{row.state}</TableCell>
+                <TableCell>{row.cep}</TableCell>
+                <TableCell>{row.contact_email}</TableCell>
+                <TableCell>{row.contact_phone}</TableCell>
+                <TableCell>{row.linkedin_url}</TableCell>
+                <TableCell>{row.site_url}</TableCell>
+                <TableCell>{dayjs(row.created_at).format('DD/MM/YYYY')}</TableCell>
                 <TableCell>
                   <Button variant="contained" color="primary" onClick={() => { onEdit(row.id)}}
                           sx={{ borderRadius: 2, boxShadow: 6 }}>

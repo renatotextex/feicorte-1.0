@@ -8,12 +8,14 @@ import { Presentation as PresentationIcon } from '@phosphor-icons/react/dist/ssr
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { XSquare } from '@phosphor-icons/react/dist/ssr/XSquare';
 
+
 export const navIcons = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,
   'x-square': XSquare,
   user: UserIcon,
+  event: PresentationIcon,
   users: UsersIcon,
   calendar: CalendarIcon,
   presentation: PresentationIcon,

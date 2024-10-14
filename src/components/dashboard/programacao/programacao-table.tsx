@@ -16,17 +16,13 @@ import Button from '@mui/material/Button';
 import dayjs from 'dayjs';
 
 export interface Programacao {
-  cnpj: string;
-  cpf: string;
-  time: dayjs.ConfigType;
-  gender: string;
   id: string;
-  avatar: string;
-  name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
+  event: string;
   date: string;
+  time: dayjs.ConfigType;
+  location: string;
+  description: string;
+  palestrante: string;
   createdAt: Date;
 }
 
@@ -67,10 +63,12 @@ export function ProgramacaoTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Localização</TableCell>
-              <TableCell>Contato</TableCell>
+              <TableCell>Evento</TableCell>
+              <TableCell>Data</TableCell>
+              <TableCell>Horário</TableCell>
+              <TableCell>Local</TableCell>
+              <TableCell>Descrição</TableCell>
+              <TableCell>Palestrante</TableCell>
               <TableCell>Data de Inclusão</TableCell>
               <TableCell>Ações</TableCell>
             </TableRow>
@@ -80,15 +78,15 @@ export function ProgramacaoTable({
               <TableRow hover key={row.id}>
                 <TableCell>
                   <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                    <Typography variant="subtitle2">{row.name}</Typography>
+                    <Typography variant="subtitle2">{row.event}</Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>
-                  {row.address.city}, {row.address.state}, {row.address.country}
-                </TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
+                <TableCell>{row.date}</TableCell>
+                <TableCell>{row.time}</TableCell>
+                <TableCell>{row.location}</TableCell>
+                <TableCell>{row.description}</TableCell>
+                <TableCell>{row.palestrante}</TableCell>
+                <TableCell>{dayjs(row.createdAt).format('DD/MM/YYYY')}</TableCell>
                 <TableCell>
                   <Button variant="contained" color="primary" onClick={() => { onEdit(row.id)}}
                           sx={{ borderRadius: 2, boxShadow: 6 }}>

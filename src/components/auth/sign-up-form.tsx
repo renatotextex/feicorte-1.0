@@ -24,8 +24,11 @@ import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
 import IconButton from "@mui/material/IconButton";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 const schema = zod.object({
+  tipo: zod.string().min(1, { message: 'Tipo é obrigatório' }),
   firstName: zod.string().min(1, { message: 'Nome é obrigatório' }),
   lastName: zod.string().min(1, { message: 'Sobrenome é obrigatório' }),
   email: zod.string().min(1, { message: 'Email é obrigatório' }).email(),
@@ -33,9 +36,14 @@ const schema = zod.object({
   terms: zod.boolean().refine((value) => value, 'Você precisa aceitar os termos e condições'),
 });
 
+const tipo = [
+  {value: '1', label: 'Gerente'},
+  {value: '2', label: 'Representante'},
+] as const;
+
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
+const defaultValues = { tipo: '', firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const router = useRouter();
@@ -95,6 +103,26 @@ export function SignUpForm(): React.JSX.Element {
       </Stack>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
+          <Controller
+            control={control}
+            name="tipo"
+            render={({field}) => (
+              <FormControl error={Boolean(errors.tipo)}>
+                <InputLabel>Tipo</InputLabel>
+              <Select
+                {...field}
+                label="Tipo"
+              >
+                {tipo.map((option) => (
+                  <MenuItem key={option.value} value={option.value}  style={{ minHeight: 48 }}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+                {errors.tipo ? <FormHelperText>{errors.tipo.message}</FormHelperText> : null}
+              </FormControl>
+            )}
+          />
           <Controller
             control={control}
             name="firstName"
